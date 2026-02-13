@@ -25,10 +25,10 @@ class PerceptronADALINE:
             errors = []
 
             for i in range(len(X)):
-                S = self.net(X[i])          # ЛИНЕЙНЫЙ выход!
-                delta = target[i] - S      # ошибка ДО активации
+                S = self.net(X[i])          # линейный выход
+                delta = target[i] - S       # ошибка ДО активации
 
-                # дельта-правило
+                # дельта-правило ADALINE
                 self.w += self.lr * delta * X[i]
                 self.w0 += self.lr * delta
 
@@ -38,7 +38,19 @@ class PerceptronADALINE:
 
         return mse_history
 
-    # ===== ЭТАП 2: РАБОТА ПЕРСЕПТРОНА =====
+    # ===== ЭТАП 2: ОБУЧЕНИЕ ПЕРСЕПТРОНА =====
+    def train_perceptron(self, X, target, epochs=50):
+        for epoch in range(epochs):
+            for i in range(len(X)):
+                S = self.net(X[i])
+                y = self.step(S)            # пороговый выход
+                delta = target[i] - y      # ошибка ПОСЛЕ активации
+
+                # правило персептрона
+                self.w += self.lr * delta * X[i]
+                self.w0 += self.lr * delta
+
+    # ===== ЭТАП 3: РАБОТА ПЕРСЕПТРОНА =====
     def predict(self, X):
         S = self.net(X)
         return self.step(S)
@@ -54,7 +66,12 @@ target = np.array([0, 0, 0, 1])
 
 # ===== ОБУЧЕНИЕ =====
 p = PerceptronADALINE(input_size=2, learning_rate=0.01)
+
+print("Этап 1 — обучение ADALINE")
 mse = p.train_adaline(X, target, epochs=200)
+
+print("Этап 2 — дообучение Персептрона")
+p.train_perceptron(X, target, epochs=50)
 
 # ===== ГРАФИК MSE =====
 plt.figure(figsize=(12, 5))
