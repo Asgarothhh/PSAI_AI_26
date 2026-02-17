@@ -5,12 +5,17 @@ const dataset = [
     { x1: -1, x2: -4, label: 1 }
 ];
 
-class Perceptron {
-    constructor(learning_rate = 0.1) {
+class Adaline {
+    constructor(learning_rate = 0.01) { // Для ADALINE лучше брать LR поменьше (напр. 0.01)
         this.w1 = Math.random() * 0.2 - 0.1;
         this.w2 = Math.random() * 0.2 - 0.1;
         this.bias = Math.random() * 0.2 - 0.1;
         this.lr = learning_rate;
+    }
+
+    // Линейный выход (net input)
+    getSum(x1, x2) {
+        return x1 * this.w1 + x2 * this.w2 + this.bias;
     }
 
     activate(sum) {
@@ -18,23 +23,25 @@ class Perceptron {
     }
 
     predict(x1, x2) {
-        const sum = x1 * this.w1 + x2 * this.w2 + this.bias;
-        return this.activate(sum);
+        return this.activate(this.getSum(x1, x2));
     }
 
     train(dataset) {
         let errorSum = 0;
 
         dataset.forEach(vector => {
-            const prediction = this.predict(vector.x1, vector.x2);
-            const error = vector.label - prediction;
+            // ВАЖНО: берем значение ДО активации
+            const output = this.getSum(vector.x1, vector.x2);
+            
+            // Ошибка ADALINE: (Target - Output_linear)
+            const error = vector.label - output;
 
-            if (error !== 0) {
-                this.w1 += this.lr * error * vector.x1;
-                this.w2 += this.lr * error * vector.x2;
-                this.bias += this.lr * error; 
-            }
+            // Обновление весов по дельта-правилу
+            this.w1 += this.lr * error * vector.x1;
+            this.w2 += this.lr * error * vector.x2;
+            this.bias += this.lr * error;
 
+            // Квадратичная ошибка для графиков
             errorSum += Math.pow(error, 2);
         });
 
@@ -116,7 +123,7 @@ class Visualizer {
     }
 }
 
-const brain = new Perceptron(0.1);
+const brain = new Adaline(0.1);
 const viz = new Visualizer('mseChart', 'decisionChart');
 let mseHistory = [];
 
